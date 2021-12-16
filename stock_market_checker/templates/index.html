@@ -26,27 +26,35 @@
             integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
             src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script charset="utf-8" type="text/javascript">
+        let reload_on_data_update = false;
         var socket = io();
         socket.on('connect', function () {
             // Emit connected
             update();
             socket.emit('connected', {data: 'I\'m connected!'});
         });
+        socket.on('reload_page', function () {
+            reload_on_data_update = true;
+        });
         socket.on('client_update', function (json) {
             // Update values for client
 
-            // console.log('CLIENT UPDATE!');
             // console.log(data);
             // console.log(typeof (data));
-            for (const [key, value] of Object.entries(json)) {
-                // Updates values for each symbol that was originally set
+            if (reload_on_data_update) {
+                location.reload();
+            } else {
+                for (const [key, value] of Object.entries(json)) {
+                    // Updates values for each symbol that was originally set
 
-                // console.log(`${key}: ${value}`);
-                let val = value;
-                val = "$" + val;
-                $('td.' + key).text(val);
+                    // console.log(`${key}: ${value}`);
+                    let val = value;
+                    val = "$" + val;
+                    $('td.' + key).text(val);
+                }
+
+                update();
             }
-            update();
         });
         var update = function () {
             let dt = new Date();

@@ -7,7 +7,10 @@ from pathlib import Path
 import requests as requests
 from bs4 import BeautifulSoup
 
-from config.config import BASE_URL, CURRENCY, FILENAME, HOST_ADDRESS, HOST_PORT, HOST_UPDATE_PATH, SYMBOLS
+from config.config import (
+    BASE_URL, CURRENCY, DATA_UPDATE_INTERVAL, FILENAME, HOST_ADDRESS, HOST_PORT, HOST_UPDATE_PATH,
+    update_symbol
+)
 
 
 def _format_div_text(text: str, currency: str = '$') -> str:
@@ -99,7 +102,7 @@ def write_csv(data: dict):
 def _run_all() -> dict:
     dict_res = {}
     with concurrent.futures.ProcessPoolExecutor(max_workers=os.cpu_count() * 2) as executor:
-        future_to_url = {executor.submit(_run_single, symbol): symbol for symbol in SYMBOLS}
+        future_to_url = {executor.submit(_run_single, symbol): symbol for symbol in update_symbol()}
         for future in concurrent.futures.as_completed(future_to_url):
             symbol = future_to_url[future]
             try:
@@ -126,8 +129,15 @@ def run() -> dict:
 if __name__ == '__main__':
     while True:
         start_time = time.time()
-        run()
-        end_time = time.time()
-        difference_time = end_time - start_time
-        print(difference_time)
-        time.sleep(10.0 - difference_time)
+        try:
+            run()
+        except Exception as e:
+            print(e)
+        finally:
+            end_time = time.time()
+            difference_time = end_time - start_time
+            # print(difference_time)
+            run_difference = DATA_UPDATE_INTERVAL - difference_time
+            if run_difference < DATA_UPDATE_INTERVAL:
+                run_difference = DATA_UPDATE_INTERVAL
+            time.sleep(run_difference)

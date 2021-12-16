@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ head_html|safe }}
+    <title>{{ title|e }}</title>
+</head>
+<body>
+<table>
+    <tr>
+        <td>
+            <label for="symbol_add">Symbol Management</label>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <input id="symbol_add" name="symbol_add" type="text">
+            <input id="submit" type="submit" value="Add">
+        </td>
+    </tr>
+</table>
+<br>
+<br>
+<br>
+<table class="data">
+    <tr>
+        <th>Symbol</th>
+        <th>Value</th>
+    </tr>
+    {% for k in symbols %}
+    <tr>
+        <td><a href="{{ base_url|e }}/{{ k|e }}" target="_blank">{{ k|e }}</a></td>
+        <td class="button_{{ k|e }}"><a href="{{ symbols_url|e }}/remove/{{ k|e }}">&#10006;</a></td>
+    </tr>
+    {% endfor %}
+</table>
+</body>
+<footer>
+    {{ footer_html|safe }}
+    <script charset="utf-8" type="text/javascript">
+        $("#submit").on("click", function () {
+            let symbol = $("input#symbol_add")[0].value;
+            window.location.href = "{{ symbols_url|e }}/add/" + symbol;
+        });
+        var socket = io();
+        socket.on('symbols_update', function () {
+            // Emit connected
+            setTimeout(function () {
+                location.reload();
+            }, 1000);
+        });
+    </script>
+</footer>
+</html>
