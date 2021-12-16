@@ -99,6 +99,27 @@ def write_csv(data: dict):
     requests.post(f'http://{HOST_ADDRESS}:{HOST_PORT}/{HOST_UPDATE_PATH}')
 
 
+def validate_value(value: str) -> bool:
+    """Ensure value is valid
+
+    Args:
+        value (str): Value string
+
+    Returns:
+        bool: Whether value is valid or not.
+    """
+    if len(value) < 4:
+        return False
+    if '%' in value:
+        return False
+    if '.' not in value:
+        return False
+    if (len(value) - 3) != value.index('.'):
+        return False
+
+    return True
+
+
 def _run_all() -> dict:
     dict_res = {}
     with concurrent.futures.ProcessPoolExecutor(max_workers=os.cpu_count() * 2) as executor:
@@ -110,7 +131,10 @@ def _run_all() -> dict:
             except Exception as exc:
                 print('%r generated an exception: %s' % (symbol, exc))
             else:
-                dict_res.update({symbol: value})
+                if validate_value(value):
+                    dict_res.update({symbol: value})
+                else:
+                    print(f'Value {symbol} is invalid.')
 
     dict_out = dict(sorted(dict_res.items()))
 
