@@ -80,8 +80,10 @@ def index():
     """
     return render_template(
         'index.html',
+        title='Stocks Main',
         data=app.DATA,
         base_url=BASE_URL,
+        head_html=HEAD_HTML,
         footer_html=FOOTER_HTML
     )
 
