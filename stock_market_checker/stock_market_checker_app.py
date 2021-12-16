@@ -78,7 +78,12 @@ def index():
     Returns:
         flask.render_template: Renders template for index.html
     """
-    return render_template('index.html', data=app.DATA, base_url=BASE_URL)
+    return render_template(
+        'index.html',
+        data=app.DATA,
+        base_url=BASE_URL,
+        footer_html=FOOTER_HTML
+    )
 
 
 def symbols_path_get():

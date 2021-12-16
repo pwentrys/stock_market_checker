@@ -22,9 +22,7 @@
 </table>
 </body>
 <footer>
-    <script crossorigin="anonymous"
-            integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
-            src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    {{ footer_html|safe }}
     <script charset="utf-8" type="text/javascript">
         let reload_on_data_update = false;
         var socket = io();
@@ -38,6 +36,11 @@
             update();
             socket.emit('disconnected', {data: 'Client Disconnected: ' + navigator.userAgent.toString()});
         });
+        var update = function () {
+            let dt = new Date();
+            $('div.last_update').text('Last Update: ' + dt.toTimeString());
+        }
+
         socket.on('reload_page', function () {
             reload_on_data_update = true;
         });
@@ -61,10 +64,6 @@
                 update();
             }
         });
-        var update = function () {
-            let dt = new Date();
-            $('div.last_update').text('Last Update: ' + dt.toTimeString());
-        }
     </script>
 </footer>
 </html>
