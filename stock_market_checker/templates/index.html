@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="main.css" rel="stylesheet">
+    <title>Stocks Main</title>
+</head>
+<body>
+<div class="last_update">Last Update: Never</div>
+<table class="data">
+    <tr>
+        <th>Symbol</th>
+        <th>Value</th>
+    </tr>
+    {% for k in data %}
+    <tr>
+        <td><a href="{{ base_url|e }}/{{ k|e }}" target="_blank">{{ k|e }}</a></td>
+        <td class="{{ k|e }}">${{ data.get(k)|e }}</td>
+    </tr>
+    {% endfor %}
+</table>
+</body>
+<footer>
+    <script crossorigin="anonymous"
+            integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+            src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script charset="utf-8" type="text/javascript">
+        var socket = io();
+        socket.on('connect', function () {
+            // Emit connected
+            update();
+            socket.emit('connected', {data: 'I\'m connected!'});
+        });
+        socket.on('client_update', function (json) {
+            // Update values for client
+
+            // console.log('CLIENT UPDATE!');
+            // console.log(data);
+            // console.log(typeof (data));
+            for (const [key, value] of Object.entries(json)) {
+                // Updates values for each symbol that was originally set
+
+                // console.log(`${key}: ${value}`);
+                let val = value;
+                val = "$" + val;
+                $('td.' + key).text(val);
+            }
+            update();
+        });
+        var update = function () {
+            let dt = new Date();
+            $('div.last_update').text('Last Update: ' + dt.toTimeString());
+        }
+    </script>
+</footer>
+</html>

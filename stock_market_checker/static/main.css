@@ -1,0 +1,54 @@
+@font-face {
+    font-family: Roboto;
+    src: url('fonts/Roboto-Regular.ttf') format('truetype');
+    font-weight: bold;
+}
+
+body {
+    background-color: #333;
+    color: #ccc;
+    font-size: 24px;
+    font-family: Roboto, sans-serif;
+    margin: 50px;
+}
+
+a {
+    color: #ccc;
+    text-decoration: none;
+    font-size: 24px;
+    font-family: Roboto, sans-serif;
+    margin: 50px;
+}
+
+table {
+    width: 100%;
+}
+
+tr {
+    position: center;
+}
+
+tr:nth-child(even) {
+    background-color: #303030;
+}
+
+tr:nth-child(odd) {
+    background-color: #373737;
+}
+
+th {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+td {
+    position: center;
+}
+
+td:first-child {
+    text-align: center;
+}
+
+div {
+    font-size: 12px;
+}
