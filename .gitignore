@@ -112,3 +112,4 @@ credentials.py
 # Project exclude paths
 /docs/
 /keys/
+output.csv
