@@ -188,8 +188,18 @@ def update_data():
     return resp_out
 
 
+@socketio.on('connect')
+def handle_connect_event():
+    """Debug for each time client place connects.
+
+    Returns:
+        None
+    """
+    print(f'Automated Connect Event')
+
+
 @socketio.on('connected')
-def handle_connected_event(json):
+def handle_connected_event(json=None):
     """Debug for each time client place connects.
 
     Args:
@@ -198,7 +208,32 @@ def handle_connected_event(json):
     Returns:
         None
     """
-    print('received json: ' + str(json))
+    print(f'Connect Event: {json}')
+
+
+@socketio.on('disconnect')
+def handle_disconnect_event():
+    """Debug for each time client place disconnects.
+
+    Returns:
+        None
+    """
+    print(f'Automated Disconnect Event')
+
+
+@socketio.on('disconnected')
+def handle_disconnected_event(json=None):
+    """Debug for each time client place disconnects.
+
+    TODO: Figure out how this can work.
+
+    Args:
+        json (json): Data dict from client.
+
+    Returns:
+        None
+    """
+    print(f'Disconnect Event: {json}')
 
 
 def server_update(json):

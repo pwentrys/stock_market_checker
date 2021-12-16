@@ -31,7 +31,12 @@
         socket.on('connect', function () {
             // Emit connected
             update();
-            socket.emit('connected', {data: 'I\'m connected!'});
+            socket.emit('connected', {data: 'Client Connected: ' + navigator.userAgent.toString()});
+        });
+        socket.on('disconnect', function () {
+            // Emit connected
+            update();
+            socket.emit('disconnected', {data: 'Client Disconnected: ' + navigator.userAgent.toString()});
         });
         socket.on('reload_page', function () {
             reload_on_data_update = true;
