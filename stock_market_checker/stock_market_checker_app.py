@@ -1,12 +1,12 @@
-from pathlib import Path
 from uuid import uuid4
 
 from flask import Flask, jsonify, redirect, render_template
 from flask_socketio import SocketIO
 
-from config.config import BASE_URL, FILENAME, HOST_ADDRESS, HOST_PORT, update_symbol
-
+from config.config import BASE_URL, HOST_ADDRESS, HOST_PORT
 # Initial app start config - Flask object defines
+from utilities.symbols_utils import _update_data, symbols_add, symbols_remove, symbols_update, update_app_symbols
+
 server_options = {
     'async_mode': 'threading',
 }
@@ -22,6 +22,8 @@ socketio = SocketIO(
 )
 
 app.TEXT_LAST = ''
+app.SYMBOLS = []
+update_app_symbols(app)
 
 HEAD_HTML = """
     <meta charset="UTF-8">
@@ -34,41 +36,6 @@ FOOTER_HTML = """
             integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
             src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     """
-
-
-def _update_data() -> bool:
-    """Get data from CSV and attach data to Flask object
-
-    Returns:
-        bool: Whether data has changed since last time
-    """
-    cwd = Path.cwd()
-    filepath = cwd.joinpath(FILENAME)
-    text_raw = filepath.read_text(encoding='utf=8')
-    if app.TEXT_LAST == text_raw:
-        # print(f'Last = Current')
-        return False
-
-    app.TEXT_LAST = text_raw
-    text_split = text_raw.splitlines()
-    data_dict = {}
-    for line in text_split:
-        line = line.split(',')
-
-        symbol = line[0]
-        value = line[1]
-
-        data_dict.update({symbol: value})
-
-    app.DATA = data_dict
-    return True
-
-
-def update_app_symbols():
-    app.SYMBOLS = update_symbol()
-
-
-update_app_symbols()
 
 
 @app.route('/')
@@ -88,53 +55,8 @@ def index():
     )
 
 
-def symbols_path_get():
-    return Path.cwd().joinpath('static').joinpath('symbols.ini')
-
-
-def symbols_get():
-    # Grab symbols from ini file
-    symbols_path = symbols_path_get()
-    symbols_full = symbols_path.read_text(encoding='utf-8')
-    symbols_list = symbols_full.splitlines()
-
-    return symbols_list
-
-
-def symbols_add(symbol: str) -> bool:
-    symbols = symbols_get()
-    symbol = symbol.upper()
-    if symbol not in symbols:
-        symbols.append(symbol)
-        symbols = sorted(symbols)
-        symbols_out = '\n'.join(symbol for symbol in symbols)
-        symbols_path_get().write_text(symbols_out, encoding='utf-8')
-        _update_data()
-        update_app_symbols()
-        return True
-    return False
-
-
-def symbols_remove(symbol: str) -> bool:
-    symbols = symbols_get()
-    symbol = symbol.upper()
-    if symbol in symbols:
-        symbols.remove(symbol)
-        symbols = sorted(symbols)
-        symbols_out = '\n'.join(symbol for symbol in symbols)
-        symbols_path_get().write_text(symbols_out, encoding='utf-8')
-        _update_data()
-        update_app_symbols()
-        return True
-    return False
-
-
 def reload_page():
     socketio.emit('reload_page', json={'data': 'reload_page'})
-
-
-def symbols_update():
-    socketio.emit('symbols_update', json={'data': 'symbols_update'})
 
 
 @app.route('/symbols/<string:action>/<string:symbol>')
@@ -142,14 +64,14 @@ def symbols_action(action: str, symbol: str):
     # alert_message = ''
     match action:
         case 'add':
-            symbols_add(symbol)
+            symbols_add(symbol=symbol, app=app)
             reload_page()
-            symbols_update()
+            symbols_update(socketio=socketio)
             # alert_message = f'Added: {symbol.upper()}'
         case 'remove':
-            symbols_remove(symbol)
+            symbols_remove(symbol=symbol, app=app)
             reload_page()
-            symbols_update()
+            symbols_update(socketio=socketio)
             # alert_message = f'Removed: {symbol.upper()}'
         case _:
             # alert_message = f'ERROR: {symbol.upper()}'
@@ -185,7 +107,7 @@ def update_data():
     Returns:
         int: Returns status 200 for success
     """
-    resp = _update_data()
+    resp = _update_data(app=app)
 
     if resp:
         json_data = jsonify(app.DATA)
@@ -247,7 +169,7 @@ def server_update(json):
     """Handles server updates
 
     Args:
-        json ():
+        json (): Json data.
 
     Returns:
 
@@ -263,7 +185,7 @@ def all_other_routes(the_path):
 
 
 if __name__ == '__main__':
-    _update_data()
+    _update_data(app=app)
     socketio.run(
         app,
         host=HOST_ADDRESS,
